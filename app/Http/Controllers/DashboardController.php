@@ -4,38 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Models\Reserva;
 use App\Models\Recinto;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Estadísticas básicas
-        $reservasPendientes = Reserva::pendientes()->count();
-        $reservasHoy = Reserva::aprobadas()
-            ->where('fecha_reserva', Carbon::today())
+        // Estadísticas
+        $reservasPendientes = Reserva::where('estado', 'pendiente')->count();
+        
+        $reservasHoy = Reserva::whereDate('fecha_reserva', Carbon::today())
+            ->where('estado', 'aprobada')
+            ->whereNull('fecha_cancelacion')
             ->count();
         
-        $reservasEstesMes = Reserva::aprobadas()
+        $reservasEsteMes = Reserva::whereYear('fecha_reserva', Carbon::now()->year)
             ->whereMonth('fecha_reserva', Carbon::now()->month)
+            ->where('estado', 'aprobada')
+            ->whereNull('fecha_cancelacion')
             ->count();
-            
-        $recintosActivos = Recinto::activos()->count();
+
+        // Conteo de recintos activos
+        $recintosActivos = Recinto::where('activo', true)->count();
         
-        // Reservas pendientes recientes
-        $reservasPendientesRecientes = Reserva::with(['recinto'])
-            ->pendientes()
+        // Últimas reservas pendientes
+        $ultimasReservasPendientes = Reserva::where('estado', 'pendiente')
+            ->with('recinto')
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->take(5)
             ->get();
-        
+
         return view('admin.dashboard', compact(
             'reservasPendientes',
-            'reservasHoy', 
-            'reservasEstesMes',
+            'reservasHoy',
+            'reservasEsteMes',
             'recintosActivos',
-            'reservasPendientesRecientes'
+            'ultimasReservasPendientes'
         ));
     }
 }

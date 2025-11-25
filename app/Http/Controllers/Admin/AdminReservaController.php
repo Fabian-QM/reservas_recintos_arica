@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reserva;
+use App\Models\Recinto;
 use App\Mail\ReservaAprobada;
 use App\Mail\ReservaRechazada;
 use Illuminate\Http\Request;
@@ -12,7 +13,29 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminReservaController extends Controller
 {
-    // ... otros métodos ...
+    /**
+     * Mostrar listado de reservas
+     */
+    public function index()
+    {
+        $reservas = Reserva::with(['recinto'])
+            ->orderBy('fecha_reserva', 'desc')
+            ->paginate(15);
+        
+        $recintos = Recinto::all();
+        
+        return view('admin.reservas.index', compact('reservas', 'recintos'));
+    }
+
+    /**
+     * Mostrar detalles de una reserva
+     */
+    public function show(Reserva $reserva)
+    {
+        $reserva->load(['recinto', 'aprobadaPor']);
+        
+        return view('admin.reservas.show', compact('reserva'));
+    }
 
     /**
      * Aprobar una reserva
@@ -21,7 +44,6 @@ class AdminReservaController extends Controller
     {
         // Generar código de cancelación si no existe
         if (!$reserva->codigo_cancelacion) {
-            // CORRECCIÓN: Llamar al método del controlador, no del modelo
             $reserva->codigo_cancelacion = $this->generarCodigoCancelacion();
         }
         
@@ -38,7 +60,7 @@ class AdminReservaController extends Controller
             \Log::error('Error enviando correo de aprobación: ' . $e->getMessage());
         }
         
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.reservas.show', $reserva)
             ->with('success', 'Reserva aprobada correctamente y correo enviado.');
     }
 
@@ -63,13 +85,12 @@ class AdminReservaController extends Controller
             \Log::error('Error enviando correo de rechazo: ' . $e->getMessage());
         }
         
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.reservas.show', $reserva)
             ->with('success', 'Reserva rechazada y notificación enviada.');
     }
 
     /**
      * Genera un código único de cancelación
-     * IMPORTANTE: Este método debe estar en el CONTROLADOR, no en el modelo
      */
     private function generarCodigoCancelacion()
     {
@@ -79,6 +100,4 @@ class AdminReservaController extends Controller
         
         return $codigo;
     }
-    
-    // ... otros métodos ...
 }

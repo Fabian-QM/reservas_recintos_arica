@@ -6,6 +6,7 @@ use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\CancelacionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\AdminReservaController;
+use App\Http\Controllers\Admin\RecintoController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -90,4 +91,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('reservas.aprobar');
     Route::post('/reservas/{reserva}/rechazar', [AdminReservaController::class, 'rechazar'])
         ->name('reservas.rechazar');
+    
+    // Gestión de Recintos
+    Route::resource('recintos', RecintoController::class);
+    Route::post('recintos/{recinto}/cambiar-estado', [RecintoController::class, 'cambiarEstado'])
+        ->name('recintos.cambiarEstado');
 });

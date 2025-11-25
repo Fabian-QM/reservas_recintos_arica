@@ -33,14 +33,20 @@
                     <a href="{{ route('calendario') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('calendario') ? 'font-bold border-b-2 border-blue-200' : '' }}">
                         Calendario
                     </a>
-                    <a href="{{ route('cancelacion.formulario') }}" class="hover:text-blue-200 transition-colors">
+                    <a href="{{ route('cancelacion.formulario') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('cancelacion.formulario') ? 'font-bold border-b-2 border-blue-200' : '' }}">
                         Cancelar Reserva
                     </a>
                     @auth
                         <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('admin.dashboard') ? 'font-bold border-b-2 border-blue-200' : '' }}">
                             Administración
                         </a>
-                        <a href="{{ route('admin.estadisticas.index') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('admin.estadisticas.index') ? 'font-bold border-b-2 border-blue-200' : '' }}">
+                        <a href="{{ route('admin.reservas.index') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('admin.reservas.*') ? 'font-bold border-b-2 border-blue-200' : '' }}">
+                            Reservas
+                        </a>
+                        <a href="{{ route('admin.recintos.index') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('admin.recintos.*') ? 'font-bold border-b-2 border-blue-200' : '' }}">
+                            Recintos
+                        </a>
+                        <a href="{{ route('admin.estadisticas.index') }}" class="hover:text-blue-200 transition-colors {{ request()->routeIs('admin.estadisticas.*') ? 'font-bold border-b-2 border-blue-200' : '' }}">
                             Estadísticas
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
@@ -72,11 +78,20 @@
                 <a href="{{ route('calendario') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('calendario') ? 'font-bold' : '' }}">
                     Calendario
                 </a>
+                <a href="{{ route('cancelacion.formulario') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('cancelacion.formulario') ? 'font-bold' : '' }}">
+                    Cancelar Reserva
+                </a>
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('admin.dashboard') ? 'font-bold' : '' }}">
                         Administración
                     </a>
-                    <a href="{{ route('admin.estadisticas.index') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('admin.estadisticas.index') ? 'font-bold' : '' }}">
+                    <a href="{{ route('admin.reservas.index') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('admin.reservas.*') ? 'font-bold' : '' }}">
+                        Reservas
+                    </a>
+                    <a href="{{ route('admin.recintos.index') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('admin.recintos.*') ? 'font-bold' : '' }}">
+                        Recintos
+                    </a>
+                    <a href="{{ route('admin.estadisticas.index') }}" class="block py-2 hover:text-blue-200 transition-colors {{ request()->routeIs('admin.estadisticas.*') ? 'font-bold' : '' }}">
                         Estadísticas
                     </a>
                     <form method="POST" action="{{ route('logout') }}">

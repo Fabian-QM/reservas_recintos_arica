@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
-use Illuminate\Support\Str; // Necesario para generar el código aleatorio
+use Illuminate\Support\Str;
 
 class Reserva extends Model
 {
@@ -31,7 +31,6 @@ class Reserva extends Model
         'observaciones',
         'motivo_rechazo',
         'acepta_reglamento',
-        // Nuevos campos para la cancelación
         'codigo_cancelacion',
         'fecha_cancelacion',
         'cancelada_por',
@@ -45,7 +44,6 @@ class Reserva extends Model
         'hora_fin' => 'datetime:H:i',
         'fecha_respuesta' => 'datetime',
         'acepta_reglamento' => 'boolean',
-        // Casts para los nuevos campos
         'fecha_cancelacion' => 'datetime',
         'cancelada_por_usuario' => 'boolean'
     ];
@@ -67,12 +65,26 @@ class Reserva extends Model
     public function getRutFormateadoAttribute()
     {
         $rut = $this->rut;
-        if (strlen($rut) < 8) return $rut;
+        
+        // Si el RUT ya tiene formato (contiene puntos o guiones), devolverlo tal cual
+        if (strpos($rut, '.') !== false || strpos($rut, '-') !== false) {
+            return $rut;
+        }
+        
+        // Si el RUT es muy corto, devolverlo sin formatear
+        if (strlen($rut) < 2) {
+            return $rut;
+        }
         
         $cuerpo = substr($rut, 0, -1);
         $dv = substr($rut, -1);
         
-        return number_format($cuerpo, 0, '', '.') . '-' . $dv;
+        // Validar que el cuerpo sea numérico antes de formatear
+        if (!is_numeric($cuerpo)) {
+            return $rut;
+        }
+        
+        return number_format((int)$cuerpo, 0, '', '.') . '-' . $dv;
     }
 
     public function getDuracionAttribute()
@@ -172,8 +184,6 @@ class Reserva extends Model
             'fecha_cancelacion' => now(),
             'motivo_cancelacion' => $motivo,
             'cancelada_por_usuario' => $canceladaPorUsuario,
-            // Opcional: Si quieres liberar el cupo visualmente, puedes descomentar la siguiente línea
-            // 'estado' => 'rechazada' 
         ]);
     }
 
@@ -194,7 +204,7 @@ class Reserva extends Model
         // Genera el código automáticamente ANTES de crear una reserva nueva
         static::creating(function ($reserva) {
             if (empty($reserva->codigo_cancelacion)) {
-                // Genera un código con formato: XXXXXXXX-XXXXXXXX (8 caracteres - guión - 8 caracteres)
+                // Genera un código con formato: XXXXXXXX-XXXXXXXX
                 $parte1 = Str::upper(Str::random(8));
                 $parte2 = Str::upper(Str::random(8));
                 $reserva->codigo_cancelacion = $parte1 . '-' . $parte2;
