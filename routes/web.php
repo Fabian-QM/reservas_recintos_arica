@@ -44,13 +44,25 @@ Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])
 Route::get('/cancelar-reserva', [CancelacionController::class, 'mostrarFormulario'])
     ->name('cancelacion.formulario');
 
-// Buscar reserva por código
+// Buscar reserva por código (POST)
 Route::post('/cancelar-reserva/buscar', [CancelacionController::class, 'buscarReserva'])
     ->name('cancelacion.buscar');
 
-// Procesar cancelación
+// Redirección GET para evitar error de método no permitido
+Route::get('/cancelar-reserva/buscar', function() {
+    return redirect()->route('cancelacion.formulario')
+        ->with('error', 'Por favor, ingresa el código de cancelación desde el formulario.');
+});
+
+// Procesar cancelación (POST)
 Route::post('/cancelar-reserva/{codigo}', [CancelacionController::class, 'cancelar'])
     ->name('cancelacion.procesar');
+
+// Redirección GET para evitar error de método no permitido
+Route::get('/cancelar-reserva/{codigo}', function() {
+    return redirect()->route('cancelacion.formulario')
+        ->with('error', 'Por favor, utiliza el formulario para cancelar tu reserva.');
+});
 
 // Página de cancelación exitosa
 Route::get('/cancelacion-exitosa', [CancelacionController::class, 'exito'])

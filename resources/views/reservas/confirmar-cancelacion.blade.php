@@ -51,12 +51,22 @@
                 
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <p class="text-sm text-gray-500 mb-1">Fecha de la Reserva</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ $reserva->fecha_reserva->format('d/m/Y') }}</p>
+                    <p class="text-lg font-semibold text-gray-800">
+                        {{ \Carbon\Carbon::parse($reserva->fecha_reserva)->format('d/m/Y') }}
+                    </p>
                 </div>
                 
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <p class="text-sm text-gray-500 mb-1">Horario</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ $reserva->hora_inicio }} - {{ $reserva->hora_fin }}</p>
+                    <p class="text-lg font-semibold text-gray-800">
+                        @php
+                            $inicio = \Carbon\Carbon::parse($reserva->hora_inicio);
+                            $fin = \Carbon\Carbon::parse($reserva->hora_fin);
+                            $duracion = $inicio->diffInHours($fin);
+                        @endphp
+                        {{ $inicio->format('H:i') }} - {{ $fin->format('H:i') }}
+                        <span class="text-sm text-gray-500">({{ $duracion }} horas)</span>
+                    </p>
                 </div>
                 
                 <div class="bg-gray-50 p-4 rounded-lg">
@@ -66,7 +76,7 @@
                 
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <p class="text-sm text-gray-500 mb-1">Deporte</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ $reserva->deporte }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ $reserva->deporte ?? 'No especificado' }}</p>
                 </div>
             </div>
         </div>
