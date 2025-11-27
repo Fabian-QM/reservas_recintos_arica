@@ -30,6 +30,8 @@ class Reserva extends Model
         'estado',
         'observaciones',
         'motivo_rechazo',
+        'fecha_respuesta',
+        'aprobada_por',
         'acepta_reglamento',
         'codigo_cancelacion',
         'fecha_cancelacion',
@@ -43,8 +45,8 @@ class Reserva extends Model
         'hora_inicio' => 'datetime:H:i',
         'hora_fin' => 'datetime:H:i',
         'fecha_respuesta' => 'datetime',
-        'acepta_reglamento' => 'boolean',
         'fecha_cancelacion' => 'datetime',
+        'acepta_reglamento' => 'boolean',
         'cancelada_por_usuario' => 'boolean'
     ];
 
@@ -112,6 +114,11 @@ class Reserva extends Model
         return $query->where('fecha_reserva', '>=', now()->toDateString());
     }
 
+    public function scopeCanceladas($query)
+    {
+        return $query->where('estado', 'cancelada');
+    }
+
     // --- LÓGICA DE NEGOCIO ---
 
     public function esEditable()
@@ -147,7 +154,7 @@ class Reserva extends Model
      */
     public static function buscarPorCodigo($codigo)
     {
-        return self::where('codigo_cancelacion', $codigo)->first();
+        return self::where('codigo_cancelacion', strtoupper(trim($codigo)))->first();
     }
 
     /**
@@ -155,13 +162,13 @@ class Reserva extends Model
      */
     public function esCancelable()
     {
-        // 1. No se puede cancelar si ya fue cancelada
-        if (!is_null($this->fecha_cancelacion)) {
+        // 1. Solo se puede cancelar si está aprobada
+        if ($this->estado !== 'aprobada') {
             return false;
         }
 
-        // 2. No se puede cancelar si ya fue rechazada por administración
-        if ($this->estado === 'rechazada') {
+        // 2. No se puede cancelar si ya fue cancelada anteriormente
+        if (!is_null($this->fecha_cancelacion)) {
             return false;
         }
 
@@ -177,14 +184,18 @@ class Reserva extends Model
 
     /**
      * Ejecuta la cancelación de la reserva.
+     * IMPORTANTE: Cambia el estado a 'cancelada'
      */
     public function cancelar($motivo = null, $canceladaPorUsuario = true)
     {
         $this->update([
+            'estado' => 'cancelada',  // ← ESTO ES LO CRÍTICO QUE FALTABA
             'fecha_cancelacion' => now(),
             'motivo_cancelacion' => $motivo,
             'cancelada_por_usuario' => $canceladaPorUsuario,
         ]);
+
+        return $this;
     }
 
     /**

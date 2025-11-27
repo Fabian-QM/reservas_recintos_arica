@@ -84,11 +84,15 @@ class AdminReservaController extends Controller
         $reserva->aprobada_por = auth()->id();
         $reserva->save();
         
+        // CRÍTICO: Recargar la reserva con la relación del recinto
+        $reserva = $reserva->fresh(['recinto']);
+        
         // Log detallado antes de enviar
         Log::info('=== INICIANDO ENVÍO DE EMAIL DE APROBACIÓN ===');
         Log::info('Reserva ID: ' . $reserva->id);
         Log::info('Email destino: ' . $reserva->email);
         Log::info('Código cancelación: ' . $reserva->codigo_cancelacion);
+        Log::info('Recinto: ' . $reserva->recinto->nombre);
         
         // Enviar correo de aprobación con el código
         try {
@@ -104,6 +108,7 @@ class AdminReservaController extends Controller
             Log::error('Mensaje: ' . $e->getMessage());
             Log::error('Archivo: ' . $e->getFile());
             Log::error('Línea: ' . $e->getLine());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return redirect()->route('admin.reservas.show', $reserva)
                 ->with('warning', 'Reserva aprobada, pero hubo un problema al enviar el correo. Error: ' . $e->getMessage());
@@ -134,11 +139,15 @@ class AdminReservaController extends Controller
         $reserva->aprobada_por = auth()->id();
         $reserva->save();
         
+        // CRÍTICO: Recargar la reserva con la relación del recinto
+        $reserva = $reserva->fresh(['recinto']);
+        
         // Log detallado antes de enviar
         Log::info('=== INICIANDO ENVÍO DE EMAIL DE RECHAZO ===');
         Log::info('Reserva ID: ' . $reserva->id);
         Log::info('Email destino: ' . $reserva->email);
         Log::info('Motivo: ' . $reserva->motivo_rechazo);
+        Log::info('Recinto: ' . $reserva->recinto->nombre);
         
         // Enviar correo de rechazo
         try {
@@ -154,6 +163,7 @@ class AdminReservaController extends Controller
             Log::error('Mensaje: ' . $e->getMessage());
             Log::error('Archivo: ' . $e->getFile());
             Log::error('Línea: ' . $e->getLine());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return redirect()->route('admin.reservas.show', $reserva)
                 ->with('warning', 'Reserva rechazada, pero hubo un problema al enviar el correo. Error: ' . $e->getMessage());

@@ -13,106 +13,123 @@ class EstadisticasController extends Controller
 {
     public function index(Request $request)
     {
-        // Rango de fechas (últimos 30 días por defecto)
-        $fechaInicio = $request->get('fecha_inicio', Carbon::now()->subDays(30)->format('Y-m-d'));
-        $fechaFin = $request->get('fecha_fin', Carbon::now()->format('Y-m-d'));
-        
-        // Deportes más populares
-        $deportesPopulares = Reserva::select('deporte', DB::raw('COUNT(*) as total'))
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->groupBy('deporte')
-            ->orderBy('total', 'desc')
-            ->get();
-        
-        // Reservas por estado
-        $reservasPorEstado = Reserva::select('estado', DB::raw('COUNT(*) as total'))
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->groupBy('estado')
-            ->get();
-        
+        // Rango de fechas (por defecto últimos 30 días)
+        $fechaDesde = $request->input('fecha_desde', now()->subDays(30)->format('Y-m-d'));
+        $fechaHasta = $request->input('fecha_hasta', now()->format('Y-m-d'));
+
+        // Estadísticas generales
+        $totalReservas = Reserva::whereBetween('created_at', [$fechaDesde, $fechaHasta])->count();
+        $reservasAprobadas = Reserva::where('estado', 'aprobada')
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->count();
+        $reservasRechazadas = Reserva::where('estado', 'rechazada')
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->count();
+        $reservasPendientes = Reserva::where('estado', 'pendiente')
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->count();
+        $reservasCanceladas = Reserva::where('estado', 'cancelada')
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->count();
+
+        // Tasa de aprobación vs rechazo
+        $tasaAprobacion = $totalReservas > 0 ? round(($reservasAprobadas / $totalReservas) * 100, 1) : 0;
+        $tasaRechazo = $totalReservas > 0 ? round(($reservasRechazadas / $totalReservas) * 100, 1) : 0;
+
         // Recintos más solicitados
-        $recintosMasSolicitados = Reserva::select('recintos.nombre', DB::raw('COUNT(reservas.id) as total'))
-            ->join('recintos', 'reservas.recinto_id', '=', 'recintos.id')
-            ->whereBetween('reservas.fecha_reserva', [$fechaInicio, $fechaFin])
-            ->groupBy('recintos.nombre', 'recintos.id')
+        $recintosMasSolicitados = Reserva::select('recinto_id', DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->with('recinto')
+            ->groupBy('recinto_id')
             ->orderBy('total', 'desc')
+            ->limit(10)
             ->get();
-        
-        // Reservas por mes (últimos 6 meses)
-        $reservasPorMes = Reserva::select(
-                DB::raw('YEAR(fecha_reserva) as año'),
-                DB::raw('MONTH(fecha_reserva) as mes'),
-                DB::raw('COUNT(*) as total')
-            )
-            ->where('fecha_reserva', '>=', Carbon::now()->subMonths(6))
-            ->groupBy('año', 'mes')
-            ->orderBy('año', 'asc')
-            ->orderBy('mes', 'asc')
-            ->get();
-        
-        // Organizaciones más activas
-        $organizacionesMasActivas = Reserva::select('nombre_organizacion', DB::raw('COUNT(*) as total'))
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
+
+        // Organizaciones más recurrentes
+        $organizacionesRecurrentes = Reserva::select('nombre_organizacion', DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
             ->groupBy('nombre_organizacion')
             ->orderBy('total', 'desc')
             ->limit(10)
             ->get();
-        
-        // Días de la semana más solicitados
-        $diasSemanaPopulares = Reserva::select(
-                DB::raw('DAYOFWEEK(fecha_reserva) as dia_semana'),
-                DB::raw('COUNT(*) as total')
-            )
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->groupBy('dia_semana')
-            ->orderBy('dia_semana', 'asc')
-            ->get()
-            ->map(function($item) {
-                $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-                $item->dia_nombre = $dias[$item->dia_semana - 1];
-                return $item;
-            });
-        
-        // Horarios más solicitados
-        $horariosPopulares = Reserva::select(
-                DB::raw('HOUR(hora_inicio) as hora'),
-                DB::raw('COUNT(*) as total')
-            )
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->groupBy('hora')
+
+        // Deportes más practicados
+        $deportesMasPracticados = Reserva::select('deporte', DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->whereNotNull('deporte')
+            ->where('deporte', '!=', '')
+            ->groupBy('deporte')
             ->orderBy('total', 'desc')
             ->limit(10)
             ->get();
-        
-        // Estadísticas generales
-        $totalReservas = Reserva::whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])->count();
-        $reservasAprobadas = Reserva::where('estado', 'aprobada')
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->count();
-        $reservasPendientes = Reserva::where('estado', 'pendiente')
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->count();
-        $reservasRechazadas = Reserva::where('estado', 'rechazada')
-            ->whereBetween('fecha_reserva', [$fechaInicio, $fechaFin])
-            ->count();
-        
-        $tasaAprobacion = $totalReservas > 0 ? round(($reservasAprobadas / $totalReservas) * 100, 1) : 0;
-        
+
+        // Horarios más solicitados (agrupados por hora de inicio)
+        $horariosMasSolicitados = Reserva::select(DB::raw('HOUR(hora_inicio) as hora'), DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->groupBy('hora')
+            ->orderBy('hora', 'asc')
+            ->get();
+
+        // Días de la semana más solicitados
+        $diasMasSolicitados = Reserva::select(
+                DB::raw('DAYOFWEEK(fecha_reserva) as dia_numero'),
+                DB::raw('count(*) as total')
+            )
+            ->whereBetween('created_at', [$fechaDesde, $fechaHasta])
+            ->groupBy('dia_numero')
+            ->orderBy('dia_numero', 'asc')
+            ->get()
+            ->map(function ($item) {
+                $dias = [
+                    1 => 'Domingo',
+                    2 => 'Lunes',
+                    3 => 'Martes',
+                    4 => 'Miércoles',
+                    5 => 'Jueves',
+                    6 => 'Viernes',
+                    7 => 'Sábado'
+                ];
+                $item->dia_nombre = $dias[$item->dia_numero];
+                return $item;
+            });
+
+        // Tendencia de reservas por mes (últimos 12 meses)
+        $tendenciaMensual = Reserva::select(
+                DB::raw('YEAR(created_at) as año'),
+                DB::raw('MONTH(created_at) as mes'),
+                DB::raw('count(*) as total')
+            )
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('año', 'mes')
+            ->orderBy('año', 'asc')
+            ->orderBy('mes', 'asc')
+            ->get()
+            ->map(function ($item) {
+                $meses = [
+                    1 => 'Ene', 2 => 'Feb', 3 => 'Mar', 4 => 'Abr',
+                    5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Ago',
+                    9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dic'
+                ];
+                $item->mes_nombre = $meses[$item->mes];
+                return $item;
+            });
+
         return view('admin.estadisticas.index', compact(
-            'deportesPopulares',
-            'reservasPorEstado',
-            'recintosMasSolicitados',
-            'reservasPorMes',
-            'organizacionesMasActivas',
-            'diasSemanaPopulares',
-            'horariosPopulares',
             'totalReservas',
             'reservasAprobadas',
-            'reservasPendientes',
             'reservasRechazadas',
+            'reservasPendientes',
+            'reservasCanceladas',
             'tasaAprobacion',
-            'fechaInicio',
-            'fechaFin'
+            'tasaRechazo',
+            'recintosMasSolicitados',
+            'organizacionesRecurrentes',
+            'deportesMasPracticados',
+            'horariosMasSolicitados',
+            'diasMasSolicitados',
+            'tendenciaMensual',
+            'fechaDesde',
+            'fechaHasta'
         ));
     }
 }

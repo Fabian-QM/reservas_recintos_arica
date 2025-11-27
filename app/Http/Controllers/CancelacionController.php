@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Mail\ReservaCancelada;
 
 class CancelacionController extends Controller
@@ -24,14 +25,27 @@ class CancelacionController extends Controller
     {
         $request->validate([
             'codigo' => 'required|string'
+        ], [
+            'codigo.required' => 'Debes ingresar un código de cancelación'
         ]);
         
         $codigo = strtoupper(trim($request->codigo));
+        
+        Log::info('Buscando reserva con código: ' . $codigo);
+        
         $reserva = Reserva::buscarPorCodigo($codigo);
         
         if (!$reserva) {
-            return back()->withErrors(['codigo' => 'El código ingresado no es válido o no existe.']);
+            Log::warning('Código no encontrado: ' . $codigo);
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['codigo' => 'El código ingresado no es válido o no existe.']);
         }
+        
+        Log::info('Reserva encontrada', [
+            'id' => $reserva->id,
+            'estado' => $reserva->estado
+        ]);
         
         // Verificar si la reserva puede cancelarse
         if (!$reserva->esCancelable()) {
@@ -42,12 +56,19 @@ class CancelacionController extends Controller
             } elseif ($reserva->estado === 'rechazada') {
                 $mensaje .= 'La reserva fue rechazada y no requiere cancelación.';
             } elseif ($reserva->estado === 'pendiente') {
-                $mensaje .= 'La reserva aún está pendiente de aprobación.';
+                $mensaje .= 'La reserva aún está pendiente de aprobación. Solo se pueden cancelar reservas aprobadas.';
             } else {
                 $mensaje .= 'La fecha de la reserva ya pasó.';
             }
             
-            return back()->withErrors(['codigo' => $mensaje]);
+            Log::warning('Reserva no cancelable', [
+                'id' => $reserva->id,
+                'estado' => $reserva->estado
+            ]);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['codigo' => $mensaje]);
         }
         
         // Cargar relación del recinto
@@ -63,8 +84,12 @@ class CancelacionController extends Controller
     {
         $request->validate([
             'motivo' => 'required|string|max:500'
+        ], [
+            'motivo.required' => 'Debes proporcionar un motivo de cancelación',
+            'motivo.max' => 'El motivo no puede exceder 500 caracteres'
         ]);
         
+        $codigo = strtoupper(trim($codigo));
         $reserva = Reserva::buscarPorCodigo($codigo);
         
         if (!$reserva) {
@@ -77,30 +102,54 @@ class CancelacionController extends Controller
                 ->withErrors(['error' => 'Esta reserva no puede ser cancelada.']);
         }
         
-        // Cancelar la reserva
+        // Log antes de cancelar
+        Log::info('Cancelando reserva', [
+            'id' => $reserva->id,
+            'estado_anterior' => $reserva->estado
+        ]);
+        
+        // Cancelar la reserva (esto cambia el estado de 'aprobada' a 'cancelada')
         $reserva->cancelarPorUsuario($request->motivo);
+        
+        // Log después de cancelar
+        Log::info('Reserva cancelada', [
+            'id' => $reserva->id,
+            'estado_nuevo' => $reserva->estado
+        ]);
+        
+        // Recargar con la relación del recinto
+        $reserva = $reserva->fresh(['recinto']);
         
         // Enviar correo de confirmación de cancelación
         try {
+            Log::info('Enviando email de cancelación');
             Mail::to($reserva->email)->send(new ReservaCancelada($reserva));
+            Log::info('Email enviado exitosamente');
         } catch (\Exception $e) {
-            \Log::error('Error enviando correo de cancelación: ' . $e->getMessage());
+            Log::error('Error enviando correo de cancelación: ' . $e->getMessage());
         }
         
-        return redirect()->route('cancelacion.exito')
-            ->with('reserva', $reserva);
+        // CAMBIO CRÍTICO: Pasar el ID en lugar del objeto completo
+        return redirect()->route('cancelacion.exito', ['id' => $reserva->id]);
     }
     
     /**
      * Mostrar página de éxito
      */
-    public function exito()
+    public function exito(Request $request)
     {
-        if (!session()->has('reserva')) {
+        $reservaId = $request->input('id');
+        
+        if (!$reservaId) {
             return redirect()->route('home');
         }
         
-        $reserva = session('reserva');
+        $reserva = Reserva::with('recinto')->find($reservaId);
+        
+        if (!$reserva) {
+            return redirect()->route('home');
+        }
+        
         return view('reservas.cancelacion-exitosa', compact('reserva'));
     }
 }

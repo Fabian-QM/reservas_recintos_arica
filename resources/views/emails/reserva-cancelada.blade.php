@@ -263,7 +263,7 @@
             </p>
             
             <div class="cta-button">
-                <a href="{{ route('calendario') }}">Ver Calendario de Disponibilidad</a>
+                <a href="{{ url('/calendario') }}">Ver Calendario de Disponibilidad</a>
             </div>
         </div>
         

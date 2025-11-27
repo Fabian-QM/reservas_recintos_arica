@@ -3,261 +3,429 @@
 @section('title', 'Estadísticas y Reportes')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Estadísticas y Reportes</h1>
-        <p class="text-gray-600">Análisis del uso de los recintos deportivos</p>
-    </div>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Estadísticas y Reportes</h1>
+                    <p class="text-gray-600 mt-1">Análisis operacional del sistema de reservas</p>
+                </div>
+                <a href="{{ route('admin.dashboard') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Volver
+                </a>
+            </div>
+        </div>
 
-    <!-- Filtros de Fecha -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <form method="GET" action="{{ route('admin.estadisticas.index') }}" class="flex flex-wrap gap-4 items-end">
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
-                <input type="date" name="fecha_inicio" value="{{ $fechaInicio }}" 
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
-                <input type="date" name="fecha_fin" value="{{ $fechaFin }}" 
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+        <!-- Filtros de Fecha -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <form method="GET" action="{{ route('admin.estadisticas.index') }}" class="flex flex-wrap items-end gap-4">
+                <div class="flex-1 min-w-[200px]">
+                    <label for="fecha_desde" class="block text-sm font-medium text-gray-700 mb-2">Desde</label>
+                    <input type="date" name="fecha_desde" id="fecha_desde" 
+                           value="{{ $fechaDesde }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div class="flex-1 min-w-[200px]">
+                    <label for="fecha_hasta" class="block text-sm font-medium text-gray-700 mb-2">Hasta</label>
+                    <input type="date" name="fecha_hasta" id="fecha_hasta" 
+                           value="{{ $fechaHasta }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <button type="submit" 
+                        class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
                     Aplicar Filtros
                 </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Estadísticas Generales -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium opacity-90">Total Reservas</h3>
-                <svg class="w-8 h-8 opacity-80" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-                </svg>
-            </div>
-            <p class="text-4xl font-bold">{{ number_format($totalReservas) }}</p>
+            </form>
         </div>
 
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium opacity-90">Aprobadas</h3>
-                <svg class="w-8 h-8 opacity-80" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
+        <!-- Estadísticas Generales -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                <p class="text-sm text-gray-600 font-medium">Total Reservas</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ $totalReservas }}</p>
             </div>
-            <p class="text-4xl font-bold">{{ number_format($reservasAprobadas) }}</p>
-            <p class="text-sm opacity-90 mt-1">{{ $tasaAprobacion }}% tasa de aprobación</p>
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                <p class="text-sm text-gray-600 font-medium">Aprobadas</p>
+                <p class="text-3xl font-bold text-green-600 mt-2">{{ $reservasAprobadas }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+                <p class="text-sm text-gray-600 font-medium">Rechazadas</p>
+                <p class="text-3xl font-bold text-red-600 mt-2">{{ $reservasRechazadas }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+                <p class="text-sm text-gray-600 font-medium">Pendientes</p>
+                <p class="text-3xl font-bold text-yellow-600 mt-2">{{ $reservasPendientes }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-gray-500">
+                <p class="text-sm text-gray-600 font-medium">Canceladas</p>
+                <p class="text-3xl font-bold text-gray-600 mt-2">{{ $reservasCanceladas }}</p>
+            </div>
         </div>
 
-        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium opacity-90">Pendientes</h3>
-                <svg class="w-8 h-8 opacity-80" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                </svg>
-            </div>
-            <p class="text-4xl font-bold">{{ number_format($reservasPendientes) }}</p>
-        </div>
-
-        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium opacity-90">Rechazadas</h3>
-                <svg class="w-8 h-8 opacity-80" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                </svg>
-            </div>
-            <p class="text-4xl font-bold">{{ number_format($reservasRechazadas) }}</p>
-        </div>
-    </div>
-
-    <!-- Gráficos y Tablas -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        
-        <!-- Deportes más Populares -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                </svg>
-                Deportes más Populares
-            </h2>
+        <!-- Gráficos: Fila 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             
-            @if($deportesPopulares->count() > 0)
-                <div class="space-y-4">
-                    @php
-                        $maxTotal = $deportesPopulares->max('total');
-                    @endphp
-                    @foreach($deportesPopulares as $deporte)
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">{{ $deporte->deporte ?? 'No especificado' }}</span>
-                            <span class="text-sm font-bold text-gray-900">{{ $deporte->total }} reservas</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500" 
-                                 style="width: {{ ($deporte->total / $maxTotal) * 100 }}%"></div>
-                        </div>
-                    </div>
-                    @endforeach
+            <!-- Tasa de Aprobación vs Rechazo -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Tasa de Aprobación vs Rechazo</h3>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="tasaAprobacionChart"></canvas>
                 </div>
-            @else
-                <p class="text-gray-500 text-center py-8">No hay datos disponibles</p>
-            @endif
-        </div>
-
-        <!-- Recintos más Solicitados -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-                </svg>
-                Recintos más Solicitados
-            </h2>
-            
-            @if($recintosMasSolicitados->count() > 0)
-                <div class="space-y-4">
-                    @php
-                        $maxTotalRecintos = $recintosMasSolicitados->max('total');
-                    @endphp
-                    @foreach($recintosMasSolicitados as $recinto)
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">{{ $recinto->nombre }}</span>
-                            <span class="text-sm font-bold text-gray-900">{{ $recinto->total }} reservas</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500" 
-                                 style="width: {{ ($recinto->total / $maxTotalRecintos) * 100 }}%"></div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500 text-center py-8">No hay datos disponibles</p>
-            @endif
-        </div>
-
-    </div>
-
-    <!-- Más Estadísticas -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        
-        <!-- Días de la Semana más Populares -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                </svg>
-                Días más Solicitados
-            </h2>
-            
-            @if($diasSemanaPopulares->count() > 0)
-                <div class="space-y-3">
-                    @php
-                        $maxDias = $diasSemanaPopulares->max('total');
-                    @endphp
-                    @foreach($diasSemanaPopulares as $dia)
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">{{ $dia->dia_nombre }}</span>
-                            <span class="text-sm font-bold text-gray-900">{{ $dia->total }}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2.5 rounded-full" 
-                                 style="width: {{ ($dia->total / $maxDias) * 100 }}%"></div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500 text-center py-8">No hay datos disponibles</p>
-            @endif
-        </div>
-
-        <!-- Horarios más Populares -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                </svg>
-                Horarios más Solicitados
-            </h2>
-            
-            @if($horariosPopulares->count() > 0)
-                <div class="space-y-3">
-                    @php
-                        $maxHorarios = $horariosPopulares->max('total');
-                    @endphp
-                    @foreach($horariosPopulares as $horario)
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">{{ sprintf('%02d:00', $horario->hora) }} - {{ sprintf('%02d:00', $horario->hora + 1) }}</span>
-                            <span class="text-sm font-bold text-gray-900">{{ $horario->total }} reservas</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-2.5 rounded-full" 
-                                 style="width: {{ ($horario->total / $maxHorarios) * 100 }}%"></div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500 text-center py-8">No hay datos disponibles</p>
-            @endif
-        </div>
-
-    </div>
-
-    <!-- Organizaciones más Activas -->
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-            <svg class="w-6 h-6 mr-2 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-            </svg>
-            Top 10 Organizaciones más Activas
-        </h2>
-        
-        @if($organizacionesMasActivas->count() > 0)
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organización</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Reservas</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($organizacionesMasActivas as $index => $org)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full 
-                                    {{ $index < 3 ? 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold' : 'bg-gray-200 text-gray-700' }}">
-                                    {{ $index + 1 }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-sm font-medium text-gray-900">{{ $org->nombre_organizacion }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-sm font-bold text-gray-900">{{ $org->total }}</span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
             </div>
-        @else
-            <p class="text-gray-500 text-center py-8">No hay datos disponibles</p>
-        @endif
-    </div>
 
+            <!-- Recintos Más Solicitados -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Recintos Más Solicitados</h3>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="recintosSolicitadosChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Gráficos: Fila 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Organizaciones Recurrentes -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Organizaciones Más Recurrentes</h3>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="organizacionesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Deportes Más Practicados -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Deportes Más Practicados</h3>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="deportesChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Gráficos: Fila 3 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Horarios Más Solicitados -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Horarios Más Solicitados</h3>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="horariosChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Días Más Solicitados -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Días Más Solicitados</h3>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="diasChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Gráfico: Tendencia Mensual (Ancho completo) -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Tendencia de Reservas (Últimos 12 Meses)</h3>
+            <div style="position: relative; height: 350px;">
+                <canvas id="tendenciaMensualChart"></canvas>
+            </div>
+        </div>
+
+    </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Configuración de colores
+const colors = {
+    primary: '#3b82f6',
+    success: '#10b981',
+    danger: '#ef4444',
+    warning: '#f59e0b',
+    info: '#06b6d4',
+    purple: '#8b5cf6',
+    pink: '#ec4899',
+    indigo: '#6366f1'
+};
+
+// 1. Tasa de Aprobación vs Rechazo
+new Chart(document.getElementById('tasaAprobacionChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Aprobadas', 'Rechazadas', 'Pendientes', 'Canceladas'],
+        datasets: [{
+            data: [{{ $reservasAprobadas }}, {{ $reservasRechazadas }}, {{ $reservasPendientes }}, {{ $reservasCanceladas }}],
+            backgroundColor: [colors.success, colors.danger, colors.warning, '#6b7280'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const value = context.parsed;
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return context.label + ': ' + value + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 2. Recintos Más Solicitados
+new Chart(document.getElementById('recintosSolicitadosChart'), {
+    type: 'bar',
+    data: {
+        labels: [
+            @foreach($recintosMasSolicitados as $recinto)
+                '{{ $recinto->recinto->nombre }}',
+            @endforeach
+        ],
+        datasets: [{
+            label: 'Reservas',
+            data: [
+                @foreach($recintosMasSolicitados as $recinto)
+                    {{ $recinto->total }},
+                @endforeach
+            ],
+            backgroundColor: colors.primary,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// 3. Organizaciones Más Recurrentes
+new Chart(document.getElementById('organizacionesChart'), {
+    type: 'bar',
+    data: {
+        labels: [
+            @foreach($organizacionesRecurrentes as $org)
+                '{{ Str::limit($org->nombre_organizacion, 20) }}',
+            @endforeach
+        ],
+        datasets: [{
+            label: 'Reservas',
+            data: [
+                @foreach($organizacionesRecurrentes as $org)
+                    {{ $org->total }},
+                @endforeach
+            ],
+            backgroundColor: colors.purple,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// 4. Deportes Más Practicados
+new Chart(document.getElementById('deportesChart'), {
+    type: 'pie',
+    data: {
+        labels: [
+            @foreach($deportesMasPracticados as $deporte)
+                '{{ $deporte->deporte }}',
+            @endforeach
+        ],
+        datasets: [{
+            data: [
+                @foreach($deportesMasPracticados as $deporte)
+                    {{ $deporte->total }},
+                @endforeach
+            ],
+            backgroundColor: [
+                colors.primary, colors.success, colors.warning, colors.danger, 
+                colors.purple, colors.pink, colors.indigo, colors.info,
+                '#f97316', '#84cc16'
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 10,
+                    font: { size: 11 }
+                }
+            }
+        }
+    }
+});
+
+// 5. Horarios Más Solicitados
+new Chart(document.getElementById('horariosChart'), {
+    type: 'line',
+    data: {
+        labels: [
+            @foreach($horariosMasSolicitados as $horario)
+                '{{ str_pad($horario->hora, 2, "0", STR_PAD_LEFT) }}:00',
+            @endforeach
+        ],
+        datasets: [{
+            label: 'Reservas',
+            data: [
+                @foreach($horariosMasSolicitados as $horario)
+                    {{ $horario->total }},
+                @endforeach
+            ],
+            borderColor: colors.info,
+            backgroundColor: colors.info + '20',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: colors.info
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// 6. Días Más Solicitados
+new Chart(document.getElementById('diasChart'), {
+    type: 'bar',
+    data: {
+        labels: [
+            @foreach($diasMasSolicitados as $dia)
+                '{{ $dia->dia_nombre }}',
+            @endforeach
+        ],
+        datasets: [{
+            label: 'Reservas',
+            data: [
+                @foreach($diasMasSolicitados as $dia)
+                    {{ $dia->total }},
+                @endforeach
+            ],
+            backgroundColor: [
+                '#ef4444', '#3b82f6', '#10b981', '#f59e0b', 
+                '#8b5cf6', '#ec4899', '#06b6d4'
+            ],
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// 7. Tendencia Mensual
+new Chart(document.getElementById('tendenciaMensualChart'), {
+    type: 'line',
+    data: {
+        labels: [
+            @foreach($tendenciaMensual as $mes)
+                '{{ $mes->mes_nombre }} {{ $mes->año }}',
+            @endforeach
+        ],
+        datasets: [{
+            label: 'Reservas',
+            data: [
+                @foreach($tendenciaMensual as $mes)
+                    {{ $mes->total }},
+                @endforeach
+            ],
+            borderColor: colors.primary,
+            backgroundColor: colors.primary + '20',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 6,
+            pointBackgroundColor: colors.primary,
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+</script>
 @endsection

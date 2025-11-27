@@ -20,9 +20,13 @@
                 <span class="px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800">
                     Aprobada
                 </span>
-            @else
+            @elseif($reserva->estado === 'rechazada')
                 <span class="px-4 py-2 rounded-full text-sm font-semibold bg-red-100 text-red-800">
                     Rechazada
+                </span>
+            @elseif($reserva->estado === 'cancelada')
+                <span class="px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">
+                    Cancelada
                 </span>
             @endif
         </div>
@@ -32,6 +36,18 @@
     @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-6">
             <p class="text-green-700">{{ session('success') }}</p>
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-6">
+            <p class="text-yellow-700">{{ session('warning') }}</p>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg mb-6">
+            <p class="text-red-700">{{ session('error') }}</p>
         </div>
     @endif
 
@@ -146,6 +162,26 @@
             </div>
             @endif
 
+            <!-- Motivo de cancelación si existe -->
+            @if($reserva->estado === 'cancelada' && $reserva->motivo_cancelacion)
+            <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-semibold text-gray-800">Motivo de Cancelación:</h4>
+                        <p class="text-sm text-gray-700 mt-1">{{ $reserva->motivo_cancelacion }}</p>
+                        @if($reserva->fecha_cancelacion)
+                        <p class="text-xs text-gray-500 mt-2">Cancelada el: {{ \Carbon\Carbon::parse($reserva->fecha_cancelacion)->format('d/m/Y H:i') }}</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Alerta de Tiempo Pendiente -->
             @if($reserva->estado === 'pendiente')
             @php
@@ -213,7 +249,12 @@
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Información de Estado</h3>
                     <div class="space-y-4">
-                        <div class="border-l-4 {{ $reserva->estado === 'pendiente' ? 'border-yellow-400' : ($reserva->estado === 'aprobada' ? 'border-green-400' : 'border-red-400') }} pl-3">
+                        <div class="border-l-4 
+                            @if($reserva->estado === 'pendiente') border-yellow-400
+                            @elseif($reserva->estado === 'aprobada') border-green-400
+                            @elseif($reserva->estado === 'rechazada') border-red-400
+                            @elseif($reserva->estado === 'cancelada') border-gray-400
+                            @endif pl-3">
                             <p class="text-xs text-gray-500 uppercase tracking-wide">Estado Actual</p>
                             <p class="font-bold text-gray-900 text-lg">{{ ucfirst($reserva->estado) }}</p>
                         </div>
@@ -263,14 +304,11 @@
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-blue-900 mb-3">{{ $reserva->recinto->nombre }}</h3>
                     <div class="space-y-2 text-sm text-blue-800">
-                        @if($reserva->recinto->capacidad ?? false)
-                        <p><span class="font-semibold">Capacidad:</span> {{ $reserva->recinto->capacidad }} personas</p>
+                        @if($reserva->recinto->capacidad_maxima ?? false)
+                        <p><span class="font-semibold">Capacidad:</span> {{ $reserva->recinto->capacidad_maxima }} personas</p>
                         @endif
-                        @if($reserva->recinto->tipo ?? false)
-                        <p><span class="font-semibold">Tipo:</span> {{ $reserva->recinto->tipo }}</p>
-                        @endif
-                        @if($reserva->recinto->direccion ?? false)
-                        <p><span class="font-semibold">Ubicación:</span> {{ $reserva->recinto->direccion }}</p>
+                        @if($reserva->recinto->descripcion ?? false)
+                        <p><span class="font-semibold">Descripción:</span> {{ $reserva->recinto->descripcion }}</p>
                         @endif
                     </div>
                 </div>
